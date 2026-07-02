@@ -23,14 +23,15 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    # Оновлено з v2 до v4
+    - uses: actions/checkout@v4
     
+    # Оновлено з v1 до v4
     - name: Setup .NET Core SDK
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '6.0.x'
     
@@ -49,14 +50,16 @@ jobs:
     - name: Publish API
       run: dotnet publish --configuration ${{ env.CONFIGURATION }} --output PublishApi src/ContosoUniversity.API/ContosoUniversity.API.csproj
     
+    # Оновлено з v2 до v4 (працює значно швидше завдяки новому механізму архівації)
     - name: Upload APP results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: app
         path: PublishApp
     
+    # Оновлено з v2 до v4
     - name: Upload API results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: api
         path: PublishApi
@@ -66,47 +69,54 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Оновлено з v2 до v4 (має збігатися з версією upload-artifact)
       - name: Download APP Artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: app
           path: app-artifact
       
+      # Оновлено з v2 до v4
       - name: Download API Artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: api
           path: api-artifact
       
+      # Оновлено з v1 до v1.0.0 (фіксована стабільна версія)
       - name: Variable Substitution API
-        uses: microsoft/variable-substitution@v1
+        uses: microsoft/variable-substitution@v1.0.0
         with:
           files: api-artifact/appsettings.json
         env:
           ConnectionStrings.ContosoUniversityAPIContext: ${{ secrets.AZURE_CONTOSO_CONN_STRING }}
           ApplicationInsights.ConnectionString: ${{ secrets.AZURE_CONTOSO_APP_INSIGHTS }}
       
+      # Оновлено з v1 до v1.0.0
       - name: Variable Substitution APP
-        uses: microsoft/variable-substitution@v1
+        uses: microsoft/variable-substitution@v1.0.0
         with:
           files: app-artifact/appsettings.json
         env:
           Api.Address: https://${{ env.AZ_API_NAME }}.azurewebsites.net/
           ApplicationInsights.ConnectionString: ${{ secrets.AZURE_CONTOSO_APP_INSIGHTS }}
       
+      # Оновлено з v1.4.4 до v2.0.0 (використовує актуальні стандарти безпеки Azure)
       - name: Azure Login
-        uses: Azure/login@v1.4.4
+        uses: Azure/login@v2.0.0
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      # Оновлено з v2.2.3 до v3.0.0
       - name: Deploy API
-        uses: azure/webapps-deploy@v2.2.3
+        uses: azure/webapps-deploy@v3.0.0
         with:
           app-name: ${{ env.AZ_API_NAME }}
           package: api-artifact
       
+      # Оновлено з v2.2.3 до v3.0.0
       - name: Deploy APP
-        uses: azure/webapps-deploy@v2.2.3
+        uses: azure/webapps-deploy@v3.0.0
         with:
           app-name: ${{ env.AZ_APP_NAME }}
           package: app-artifact
